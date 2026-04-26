@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    environment:
+      POSTGRES_DB: livresdb
+      POSTGRES_USER: livresuser
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  livres-service:
+    build: .
+    container_name: livres-service
+    ports:
+      - "8081:8080"
+    depends_on:
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/livresdb
+      SPRING_DATASOURCE_USERNAME: livresuser
+      SPRING_DATASOURCE_PASSWORD: postgres
+
+  users-postgres:
+    image: postgres:16
+    container_name: users-postgres
+    environment:
+      POSTGRES_DB: usersdb
+      POSTGRES_USER: usersuser
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - users_data:/var/lib/postgresql/data
+
+  users-service:
+    build: ../userservice
+    container_name: users-service
+    ports:
+      - "8082:8080"
+    depends_on:
+      - users-postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://users-postgres:5432/usersdb
+      SPRING_DATASOURCE_USERNAME: usersuser
+      SPRING_DATASOURCE_PASSWORD: postgres
+
+  loans-postgres:
+    image: postgres:16
+    container_name: loans-postgres
+    environment:
+      POSTGRES_DB: loansdb
+      POSTGRES_USER: loansuser
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5435:5432"
+    volumes:
+      - loans_data:/var/lib/postgresql/data
+
+  loans-service:
+    build: ../loans-service
+    container_name: loans-service
+    ports:
+      - "8083:8080"
+    depends_on:
+      - loans-postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://loans-postgres:5432/loansdb
+      SPRING_DATASOURCE_USERNAME: loansuser
+      SPRING_DATASOURCE_PASSWORD: postgres
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3001:80"
+    depends_on:
+      - livres-service
+      - users-service
+
+volumes:
+  postgres_data:
+  users_data:
+  loans_data:

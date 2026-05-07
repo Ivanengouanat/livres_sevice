@@ -7,6 +7,7 @@ public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private boolean available = true;
 
     private String title;
     private String author;
@@ -34,5 +35,12 @@ public class Book {
 
     public void setAuthor(String author) {
         this.author = author;
+    }
+     public boolean isAvailable() {
+        return available;
+    }
+
+    public void setAvailable(boolean available) {
+        this.available = available;
     }
 }

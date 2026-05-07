@@ -2,9 +2,12 @@ version: '3.8'
 
 services:
 
-  postgres:
+  # ================================
+  # BOOKS
+  # ================================
+  livres-postgres:
     image: postgres:16
-    container_name: postgres
+    container_name: livres-postgres
     environment:
       POSTGRES_DB: livresdb
       POSTGRES_USER: livresuser
@@ -12,7 +15,7 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - livres_data:/var/lib/postgresql/data
 
   livres-service:
     build: .
@@ -20,12 +23,16 @@ services:
     ports:
       - "8081:8080"
     depends_on:
-      - postgres
+      - livres-postgres
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/livresdb
+      SPRING_DATASOURCE_URL: jdbc:postgresql://livres-postgres:5432/livresdb
       SPRING_DATASOURCE_USERNAME: livresuser
       SPRING_DATASOURCE_PASSWORD: postgres
 
+
+  # ================================
+  # USERS
+  # ================================
   users-postgres:
     image: postgres:16
     container_name: users-postgres
@@ -50,6 +57,10 @@ services:
       SPRING_DATASOURCE_USERNAME: usersuser
       SPRING_DATASOURCE_PASSWORD: postgres
 
+
+  # ================================
+  # LOANS
+  # ================================
   loans-postgres:
     image: postgres:16
     container_name: loans-postgres
@@ -74,15 +85,52 @@ services:
       SPRING_DATASOURCE_USERNAME: loansuser
       SPRING_DATASOURCE_PASSWORD: postgres
 
+
+  # ================================
+  # NOTIFICATIONS
+  # ================================
+  notifications-postgres:
+    image: postgres:16
+    container_name: notifications-postgres
+    environment:
+      POSTGRES_DB: notifications_db
+      POSTGRES_USER: notification_user
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5436:5432"
+    volumes:
+      - notifications_data:/var/lib/postgresql/data
+
+  notification-service:
+    build: ../notification_service
+    container_name: notification-service
+    ports:
+      - "8084:8080"
+    depends_on:
+      - notifications-postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://notifications-postgres:5432/notifications_db
+      SPRING_DATASOURCE_USERNAME: notification_user
+      SPRING_DATASOURCE_PASSWORD: postgres
+
+
+  # ================================
+  # FRONTEND
+  # ================================
   frontend:
     build: ./frontend
+    container_name: frontend
     ports:
       - "3001:80"
     depends_on:
       - livres-service
       - users-service
+      - loans-service
+      - notification-service
+
 
 volumes:
-  postgres_data:
+  livres_data:
   users_data:
   loans_data:
+  notifications_data:

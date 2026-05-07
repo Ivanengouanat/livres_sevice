@@ -29,4 +29,18 @@ public class BookController {
     public Book addBook(@RequestBody Book book) {
         return bookRepository.save(book);
     }
+
+    @PutMapping("/{id}/unavailable")
+public void setUnavailable(@PathVariable Long id) {
+    Book book = bookRepository.findById(id).orElseThrow();
+    book.setAvailable(false);
+    bookRepository.save(book);
+}
+
+@PutMapping("/{id}/available")
+public void setAvailable(@PathVariable Long id) {
+    Book book = bookRepository.findById(id).orElseThrow();
+    book.setAvailable(true);
+    bookRepository.save(book);
+}
 }
